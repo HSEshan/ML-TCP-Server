@@ -1,24 +1,42 @@
 import struct
 
+from src.config import Config
+
 
 class Protocol:
 
-    @staticmethod
-    def pack_message(payload: bytes) -> bytes:
-        """Prefix payload with 4-byte big-endian length."""
-        return struct.pack(">I", len(payload)) + payload
+    _size_formats = {
+        2: "H",  # 2-byte unsigned short
+        4: "I",  # 4-byte unsigned int
+        8: "Q",  # 8-byte unsigned long long
+    }
 
-    @staticmethod
-    def unpack_length(length_bytes: bytes) -> int:
-        """Unpack 4-byte big-endian length."""
-        return struct.unpack(">I", length_bytes)[0]
+    @classmethod
+    def pack_message(cls, payload: bytes) -> bytes:
+        """Prefix payload with big-endian length."""
+        if not isinstance(payload, (bytes, bytearray)):
+            raise TypeError("Payload must be bytes")
 
-    @staticmethod
-    def pack_prediction(pred: float) -> bytes:
-        """Pack a float64 big-endian."""
-        return struct.pack(">d", pred)
+        fmt_char = cls._size_formats.get(Config.length_field_size)
+        if not fmt_char:
+            raise ValueError(
+                f"Unsupported length field size: {Config.length_field_size}"
+            )
 
-    @staticmethod
-    def unpack_prediction(pred_bytes: bytes) -> float:
-        """Unpack a float64 big-endian."""
-        return struct.unpack(">d", pred_bytes)[0]
+        return struct.pack(f">{fmt_char}", len(payload)) + payload
+
+    @classmethod
+    def unpack_length(cls, length_bytes: bytes) -> int:
+        """Unpack big-endian length."""
+        if len(length_bytes) != Config.length_field_size:
+            raise ValueError(
+                f"Length prefix must be exactly {Config.length_field_size} bytes"
+            )
+
+        fmt_char = cls._size_formats.get(Config.length_field_size)
+        if not fmt_char:
+            raise ValueError(
+                f"Unsupported length field size: {Config.length_field_size}"
+            )
+
+        return struct.unpack(f">{fmt_char}", length_bytes)[0]

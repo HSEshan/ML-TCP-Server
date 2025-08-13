@@ -9,7 +9,7 @@ load_dotenv()
 @dataclass
 class Config:
     host: str = os.getenv("HOST")
-    port: int = os.getenv("PORT")
-    length_field_size: int = os.getenv("LENGTH_FIELD_SIZE")
-    response_size: int = os.getenv("RESPONSE_SIZE")
+    port: int = int(os.getenv("PORT"))
+    length_field_size: int = int(os.getenv("LENGTH_FIELD_SIZE"))
+    response_size: int = int(os.getenv("RESPONSE_SIZE"))
     log_level: str = os.getenv("LOG_LEVEL")

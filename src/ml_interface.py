@@ -1,4 +1,7 @@
 # Abstract class for ML interface
+import os
+
+from src.config import Config
 
 
 class ML_Interface:
@@ -6,4 +9,5 @@ class ML_Interface:
         pass
 
     def run_inference(self, payload: bytes) -> bytes:
-        return b"a"
+        random_bytes = os.urandom(Config.response_size)
+        return random_bytes
