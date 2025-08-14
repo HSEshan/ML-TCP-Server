@@ -2,31 +2,20 @@ import asyncio
 import logging
 
 from src.config import Config
+from src.core import setup_tcp_server
 from src.logging import setup_logging
-from src.ml_interface import ML_Interface
-from src.protocol import Protocol
-from src.tcp_server import TCP_Server
 
 
 async def main():
-    setup_logging()
+    setup_logging(Config.log_level)
     logger = logging.getLogger(__name__)
 
-    protocol = Protocol()
-    ml_interface = ML_Interface()
-
-    server = TCP_Server(
-        host=Config.host,
-        port=Config.port,
-        length_field_size=Config.length_field_size,
-        response_size=Config.response_size,
-    )
-
-    server.set_protocol(protocol)
-    server.set_ml_interface(ml_interface)
+    server = setup_tcp_server()
 
     try:
         await server.startup()
+        async with server.server:
+            await server.server.serve_forever()
     except asyncio.CancelledError:
         await server.shutdown()
         logger.info("Server stopped")

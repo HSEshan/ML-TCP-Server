@@ -39,4 +39,7 @@ class Protocol:
                 f"Unsupported length field size: {Config.length_field_size}"
             )
 
-        return struct.unpack(f">{fmt_char}", length_bytes)[0]
+        try:
+            return struct.unpack(f">{fmt_char}", length_bytes)[0]
+        except struct.error:
+            raise ValueError(f"Invalid length prefix: {length_bytes.hex()}")

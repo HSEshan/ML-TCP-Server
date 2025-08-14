@@ -1,13 +1,8 @@
-# Abstract class for ML interface
-import os
-
-from src.config import Config
+from src.ml_interface_abstract import ML_Interface_Abstract
 
 
-class ML_Interface:
-    def __init__(self):
-        pass
+class ML_Interface(ML_Interface_Abstract):
+    """Dummy ML interface"""
 
     def run_inference(self, payload: bytes) -> bytes:
-        random_bytes = os.urandom(Config.response_size)
-        return random_bytes
+        return b"XXXXX"
