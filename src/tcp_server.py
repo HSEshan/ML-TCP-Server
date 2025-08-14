@@ -26,7 +26,7 @@ class TCP_Server:
         self.ml_interface: ML_Interface = ml_interface
         self.length_field_size: int = length_field_size
         self.response_size: int = response_size
-        self.server: asyncio.Server = ...
+        self.server: asyncio.Server | None = None
         self.running: bool = True
         self.active_connections: Set[asyncio.StreamWriter] = set()
         self.max_connections: int = max_connections
