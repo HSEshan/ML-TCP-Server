@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Set
 
-from src.metrics import Metrics
+from src.metrics_v2 import Metrics
 from src.ml_interface import ML_Interface
 from src.protocol import Protocol
 
@@ -35,7 +35,7 @@ class TCP_Server:
         self.max_connections: int = max_connections
         self.max_payload_size: int = max_payload_size
         self.payload_timeout_seconds: int = payload_timeout_seconds
-        self.metrics: Metrics = metrics
+        self.metrics = metrics
 
     async def startup(self):
         self.server = await asyncio.start_server(
@@ -84,13 +84,13 @@ class TCP_Server:
                     continue
 
                 await writer.drain()
-                await self.metrics.add_request()
+                self.metrics.add_request()
 
         except asyncio.IncompleteReadError:
             logger.info("Client %s disconnected", peer)
         except Exception as e:
             logger.error("Error handling %s: %s", peer, e)
-            await self.metrics.add_error()
+            self.metrics.add_error()
         finally:
             await self._cleanup_connection(writer, peer)
 
@@ -108,7 +108,7 @@ class TCP_Server:
         logger.info(
             "Peer %s connected (active: %d)", peer, len(self.active_connections)
         )
-        await self.metrics.add_connection()
+        self.metrics.add_connection()
 
     async def _read_payload(self, reader: asyncio.StreamReader, peer: tuple[str, int]):
         try:
@@ -118,14 +118,14 @@ class TCP_Server:
             )
         except asyncio.TimeoutError:
             logger.warning("Timeout reading from %s", peer)
-            await self.metrics.add_error()
+            self.metrics.add_error()
             return None
 
         payload_len = self.protocol.unpack_length(length_bytes)
 
         if payload_len > self.max_payload_size:
             logger.error("Payload too large from %s: %d bytes", peer, payload_len)
-            await self.metrics.add_error()
+            self.metrics.add_error()
             return None
 
         try:
@@ -135,7 +135,7 @@ class TCP_Server:
             )
         except asyncio.TimeoutError:
             logger.warning("Timeout reading payload from %s", peer)
-            await self.metrics.add_error()
+            self.metrics.add_error()
             return None
 
         logger.debug("Received %d bytes from %s", payload_len, peer)
@@ -152,7 +152,7 @@ class TCP_Server:
             logger.debug("Sent %d bytes to %s", len(response), peer)
         except Exception as e:
             logger.error("ML inference error for %s: %s", peer, e)
-            await self.metrics.add_inference_error()
+            self.metrics.add_inference_error()
             return None
         return response
 
@@ -163,10 +163,10 @@ class TCP_Server:
         writer.close()
         try:
             await writer.wait_closed()
-            await self.metrics.remove_connection()
+            self.metrics.remove_connection()
         except Exception as e:
             logger.warning("Error closing connection for %s: %s", peer, e)
-            await self.metrics.add_error()
+            self.metrics.add_error()
         logger.info(
             "Peer %s disconnected (active: %d)",
             peer,

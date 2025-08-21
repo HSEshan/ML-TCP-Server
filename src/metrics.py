@@ -51,3 +51,6 @@ class Metrics:
     async def add_inference_error(self):
         async with self.metrics_lock:
             self.metrics["inference_errors"] += 1
+
+
+metrics = Metrics()  # Shared metrics instance

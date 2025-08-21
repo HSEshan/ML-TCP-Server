@@ -1,9 +1,10 @@
 import logging
 
-from aiohttp import web
+import uvicorn
 
 from src.config import config, debug_config
-from src.metrics import Metrics
+from src.http_server import app
+from src.metrics_v2 import Metrics
 from src.ml_interface import ML_Interface
 from src.protocol import Protocol
 from src.tcp_server import TCP_Server
@@ -30,18 +31,6 @@ def setup_tcp_server(metrics: Metrics) -> TCP_Server:
     return server
 
 
-async def http_handler(request):
-    metrics: Metrics = request.app["metrics"]
-    data = await metrics.get_metrics()
-    print(data)
-    return web.json_response(data)
-
-
-async def setup_http_server(metrics: Metrics, port: int = 8080) -> web.TCPSite:
-    app = web.Application()
-    app["metrics"] = metrics
-    app.router.add_get("/metrics", http_handler)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    return site
+def setup_http_server() -> uvicorn.Server:
+    uvicorn_config = uvicorn.Config(app, host=config.host, port=8080, loop="asyncio")
+    return uvicorn.Server(uvicorn_config)
