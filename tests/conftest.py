@@ -1,8 +1,10 @@
 import random
+from typing import override
 
 import pytest_asyncio
 
 from src.config import config
+from src.metrics_v2 import Metrics
 from src.ml_interface_abstract import ML_Interface_Abstract
 from src.protocol import Protocol
 from src.tcp_server import TCP_Server
@@ -21,21 +23,28 @@ class MockMLInterface(ML_Interface_Abstract):
     def __init__(self):
         pass
 
+    @override
     def run_inference(self, payload: bytes) -> bytes:
         random_command = random.choice(DUMMY_COMMANDS)
         return random_command
+
+    @override
+    async def async_run_inference(self, payload: bytes) -> bytes:
+        return b"XXXXX"
 
 
 class MockMLInterfaceWithException(ML_Interface_Abstract):
     def __init__(self):
         pass
 
+    @override
     def run_inference(self, payload: bytes) -> bytes:
         raise InferenceException("Inference failed")
 
 
 @pytest_asyncio.fixture(scope="function")
 async def tcp_server():
+    metrics = Metrics()
     server = TCP_Server(
         host=HOST,
         port=PORT,
@@ -46,6 +55,7 @@ async def tcp_server():
         payload_timeout_seconds=config.payload_timeout_seconds,
         protocol=Protocol(),
         ml_interface=MockMLInterface(),
+        metrics=metrics,
     )
     await server.startup()
     yield server
