@@ -37,7 +37,7 @@ A high-performance, production-ready TCP server designed for real-time machine l
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/ml-tcp-server.git
+   git clone https://github.com/HSEshan/ml-tcp-server.git
    cd ml-tcp-server
    ```
 
