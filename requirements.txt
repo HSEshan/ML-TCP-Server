@@ -1,6 +1,6 @@
 # Core dependencies
-python-dotenv>=1.0.0
+python-dotenv==1.0.1
 
 # Testing dependencies
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
+pytest==8.4.1
+pytest-asyncio==1.1.0

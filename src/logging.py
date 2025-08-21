@@ -2,12 +2,12 @@ import logging
 import sys
 from typing import Optional
 
-from src.config import Config
+from src.config import config
 
 
 def setup_logging(log_level: Optional[str] = None):
     """Setup structured logging with proper formatting"""
-    level = log_level or Config.log_level
+    level = log_level or config.log_level
 
     # Create formatter
     formatter = logging.Formatter(

@@ -1,6 +1,6 @@
 import struct
 
-from src.config import Config
+from src.config import config
 
 
 class Protocol:
@@ -17,10 +17,10 @@ class Protocol:
         if not isinstance(payload, (bytes, bytearray)):
             raise TypeError("Payload must be bytes")
 
-        fmt_char = cls._size_formats.get(Config.length_field_size)
+        fmt_char = cls._size_formats.get(config.length_field_size)
         if not fmt_char:
             raise ValueError(
-                f"Unsupported length field size: {Config.length_field_size}"
+                f"Unsupported length field size: {config.length_field_size}"
             )
 
         return struct.pack(f">{fmt_char}", len(payload)) + payload
@@ -28,15 +28,15 @@ class Protocol:
     @classmethod
     def unpack_length(cls, length_bytes: bytes) -> int:
         """Unpack big-endian length."""
-        if len(length_bytes) != Config.length_field_size:
+        if len(length_bytes) != config.length_field_size:
             raise ValueError(
-                f"Length prefix must be exactly {Config.length_field_size} bytes"
+                f"Length prefix must be exactly {config.length_field_size} bytes"
             )
 
-        fmt_char = cls._size_formats.get(Config.length_field_size)
+        fmt_char = cls._size_formats.get(config.length_field_size)
         if not fmt_char:
             raise ValueError(
-                f"Unsupported length field size: {Config.length_field_size}"
+                f"Unsupported length field size: {config.length_field_size}"
             )
 
         try:
